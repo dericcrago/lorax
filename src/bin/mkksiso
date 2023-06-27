@@ -343,7 +343,7 @@ def EditIsolinux(rm_args, add_args, new_volid, old_volid, tmpdir):
         os.replace(orig_cfg + ".new", orig_cfg)
 
 
-def EditGrub2(rm_args, add_args, new_volid, old_volid, tmpdir, default=0):
+def EditGrub2(rm_args, add_args, new_volid, old_volid, tmpdir, default=0, timeout=5):
     """
     Modify the cmdline for GRUB2 UEFI and BIOS config files
     Add the new arguments and change existing volid if requested
@@ -365,9 +365,12 @@ def EditGrub2(rm_args, add_args, new_volid, old_volid, tmpdir, default=0):
         with open(orig_cfg, "r") as in_fp:
             with open(orig_cfg + ".new", "w") as out_fp:
                 default = re.compile(r'^set default="\d+"$')
+                timeout = re.compile(r'^set timeout=\d+$')
                 for line in in_fp:
                     if default.match(line):
                         line = f'set default="{default}"'
+                    if timeout.match(line):
+                        line = f'set timeout={timeout}'
                     if change_volid and old_volid in line:
                         line = line.replace(old_volid, new_volid)
                     # Some start with linux (BIOS/aarch64), others with linuxefi (x86_64)
